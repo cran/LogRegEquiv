@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta name="author" content="Guy Ashiri-Prossner" />
+
+
+<title>LogRegEquiv Vignette</title>
+
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">LogRegEquiv Vignette</h1>
+<h4 class="author">Guy Ashiri-Prossner</h4>
+<h4 class="date">12.08.2021</h4>
+
+
+
+<p>This package provides tools for assessing the differences between logistic regression model-fits across sub-populations. For example, having data with sub-populations based on gender or native language may or may not require separate models.</p>
+<p>Consider two sub-populations of Portuguese Language course students, with 29 covariates and an output variable indicating whether the student has failed the course. These sub-populations differ by gender (M/F). These two sub-populations provide two logistic regression models, which may or may not be equivalent.</p>
+<p>The purpose of this vignette is to exemplify to usage of equivalence tests for different stages in the model: the linear coefficients, the vector of per-example log odds ratio and the mean-square error of prediction. Each method provides a different aspect of possible model equivalence.</p>
+<p>The data used is taken from the Student Performance Data<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a><sup>,</sup><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(LogRegEquiv)</span></code></pre></div>
+<div id="descriptive-equivalence-testing" class="section level1">
+<h1>Descriptive Equivalence Testing</h1>
+<p>The regression coefficient vectors provide us an insight to how a model describes the phenomenon. In our case, how is the binary variable <code>final_failure</code> affected by the covariates. When two models describe a phenomenon in a similar manner, descriptive equivalence is achieved.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>formula &lt;-<span class="st"> &quot;final_fail ~ .&quot;</span></span>
+<span id="cb2-2"><a href="#cb2-2"></a>female_model &lt;-<span class="st"> </span><span class="kw">glm</span>(<span class="dt">formula =</span> formula, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>),</span>
+<span id="cb2-3"><a href="#cb2-3"></a>                    <span class="dt">data =</span> ptg_stud_f_train)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>male_model &lt;-<span class="st"> </span><span class="kw">glm</span>(<span class="dt">formula =</span> formula, <span class="dt">family =</span> <span class="kw">binomial</span>(<span class="dt">link =</span> <span class="st">&quot;logit&quot;</span>),</span>
+<span id="cb2-5"><a href="#cb2-5"></a>                    <span class="dt">data =</span> ptg_stud_m_train)</span></code></pre></div>
+<p>Denote <span class="math inline">\(\delta_\beta\)</span> as the maximal tolerated difference per coefficient, in this case <span class="math inline">\(\delta_\beta=0.1\)</span>.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>delta_beta &lt;-<span class="st"> </span><span class="fl">0.1</span></span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="kw">print</span>(<span class="kw">beta_equivalence</span>(<span class="dt">model_a =</span> female_model,</span>
+<span id="cb3-3"><a href="#cb3-3"></a>                       <span class="dt">model_b =</span> male_model,</span>
+<span id="cb3-4"><a href="#cb3-4"></a>                       <span class="dt">delta =</span> delta_beta,</span>
+<span id="cb3-5"><a href="#cb3-5"></a>                       <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co">#&gt;      [,1]</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co">#&gt; [1,] TRUE</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">#&gt; </span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co">#&gt; $test_statistic</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co">#&gt;          [,1]</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="co">#&gt; [1,] 27.98613</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="co">#&gt; </span></span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="co">#&gt; $critical_value</span></span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="co">#&gt; [1] 117.3907</span></span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="co">#&gt; </span></span>
+<span id="cb3-17"><a href="#cb3-17"></a><span class="co">#&gt; $ncp</span></span>
+<span id="cb3-18"><a href="#cb3-18"></a><span class="co">#&gt;          [,1]</span></span>
+<span id="cb3-19"><a href="#cb3-19"></a><span class="co">#&gt; [1,] 114.8285</span></span>
+<span id="cb3-20"><a href="#cb3-20"></a><span class="co">#&gt; </span></span>
+<span id="cb3-21"><a href="#cb3-21"></a><span class="co">#&gt; $p_value</span></span>
+<span id="cb3-22"><a href="#cb3-22"></a><span class="co">#&gt;              [,1]</span></span>
+<span id="cb3-23"><a href="#cb3-23"></a><span class="co">#&gt; [1,] 1.213615e-15</span></span></code></pre></div>
+<p>It is possible to assess descriptive equivalence even without creating the models, just by providing the <code>descriptive_equiv</code> function a regression formula, two datasets and a <code>delta</code> argument:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="kw">print</span>(<span class="kw">descriptive_equiv</span>(<span class="dt">data_a =</span> ptg_stud_f_train,</span>
+<span id="cb4-2"><a href="#cb4-2"></a>                              <span class="dt">data_b =</span> ptg_stud_m_train, </span>
+<span id="cb4-3"><a href="#cb4-3"></a>                              <span class="dt">formula =</span> formula,</span>
+<span id="cb4-4"><a href="#cb4-4"></a>                              <span class="dt">delta =</span> delta_beta,</span>
+<span id="cb4-5"><a href="#cb4-5"></a>                              <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="co">#&gt; $equivalence$equivalence</span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="co">#&gt;      [,1]</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="co">#&gt; [1,] TRUE</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="co">#&gt; </span></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="co">#&gt; $equivalence$test_statistic</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="co">#&gt;          [,1]</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="co">#&gt; [1,] 27.98613</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a><span class="co">#&gt; </span></span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="co">#&gt; $equivalence$critical_value</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="co">#&gt; [1] 117.3907</span></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="co">#&gt; </span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="co">#&gt; $equivalence$ncp</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="co">#&gt;          [,1]</span></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="co">#&gt; [1,] 114.8285</span></span>
+<span id="cb4-21"><a href="#cb4-21"></a><span class="co">#&gt; </span></span>
+<span id="cb4-22"><a href="#cb4-22"></a><span class="co">#&gt; $equivalence$p_value</span></span>
+<span id="cb4-23"><a href="#cb4-23"></a><span class="co">#&gt;              [,1]</span></span>
+<span id="cb4-24"><a href="#cb4-24"></a><span class="co">#&gt; [1,] 1.213615e-15</span></span>
+<span id="cb4-25"><a href="#cb4-25"></a><span class="co">#&gt; </span></span>
+<span id="cb4-26"><a href="#cb4-26"></a><span class="co">#&gt; </span></span>
+<span id="cb4-27"><a href="#cb4-27"></a><span class="co">#&gt; $model_a</span></span>
+<span id="cb4-28"><a href="#cb4-28"></a><span class="co">#&gt; </span></span>
+<span id="cb4-29"><a href="#cb4-29"></a><span class="co">#&gt; Call:  glm(formula = as.formula(formula), family = binomial(link = &quot;logit&quot;), </span></span>
+<span id="cb4-30"><a href="#cb4-30"></a><span class="co">#&gt;     data = data_a)</span></span>
+<span id="cb4-31"><a href="#cb4-31"></a><span class="co">#&gt; </span></span>
+<span id="cb4-32"><a href="#cb4-32"></a><span class="co">#&gt; Coefficients:</span></span>
+<span id="cb4-33"><a href="#cb4-33"></a><span class="co">#&gt;      (Intercept)          schoolMS               age          addressU  </span></span>
+<span id="cb4-34"><a href="#cb4-34"></a><span class="co">#&gt;        -36.98368          24.34098           0.84479          -0.40450  </span></span>
+<span id="cb4-35"><a href="#cb4-35"></a><span class="co">#&gt;       famsizeLE3          PstatusT              Medu              Fedu  </span></span>
+<span id="cb4-36"><a href="#cb4-36"></a><span class="co">#&gt;          0.91066          -0.03428          -0.01533          -0.86226  </span></span>
+<span id="cb4-37"><a href="#cb4-37"></a><span class="co">#&gt;       Mjobhealth         Mjobother      Mjobservices       Mjobteacher  </span></span>
+<span id="cb4-38"><a href="#cb4-38"></a><span class="co">#&gt;          1.20812          -0.42232          -0.30637           0.10319  </span></span>
+<span id="cb4-39"><a href="#cb4-39"></a><span class="co">#&gt;       Fjobhealth         Fjobother      Fjobservices       Fjobteacher  </span></span>
+<span id="cb4-40"><a href="#cb4-40"></a><span class="co">#&gt;          5.20915           0.96372          -1.53855           7.35800  </span></span>
+<span id="cb4-41"><a href="#cb4-41"></a><span class="co">#&gt;       reasonhome       reasonother  reasonreputation    guardianmother  </span></span>
+<span id="cb4-42"><a href="#cb4-42"></a><span class="co">#&gt;          1.14750           1.03742           0.36426           1.85646  </span></span>
+<span id="cb4-43"><a href="#cb4-43"></a><span class="co">#&gt;    guardianother        traveltime         studytime          failures  </span></span>
+<span id="cb4-44"><a href="#cb4-44"></a><span class="co">#&gt;         -0.41585          -1.41104          -0.57161           2.99493  </span></span>
+<span id="cb4-45"><a href="#cb4-45"></a><span class="co">#&gt;     schoolsupyes         famsupyes           paidyes     activitiesyes  </span></span>
+<span id="cb4-46"><a href="#cb4-46"></a><span class="co">#&gt;          0.80975           2.13445           1.99467          -0.25541  </span></span>
+<span id="cb4-47"><a href="#cb4-47"></a><span class="co">#&gt;       nurseryyes         higheryes       internetyes       romanticyes  </span></span>
+<span id="cb4-48"><a href="#cb4-48"></a><span class="co">#&gt;          3.34798          -1.59043           0.37851          -1.03869  </span></span>
+<span id="cb4-49"><a href="#cb4-49"></a><span class="co">#&gt;           famrel          freetime             goout              Dalc  </span></span>
+<span id="cb4-50"><a href="#cb4-50"></a><span class="co">#&gt;         -0.60406           0.18248          -0.86391           0.12718  </span></span>
+<span id="cb4-51"><a href="#cb4-51"></a><span class="co">#&gt;             Walc            health          absences  </span></span>
+<span id="cb4-52"><a href="#cb4-52"></a><span class="co">#&gt;          0.89384          -0.26370          -0.07661  </span></span>
+<span id="cb4-53"><a href="#cb4-53"></a><span class="co">#&gt; </span></span>
+<span id="cb4-54"><a href="#cb4-54"></a><span class="co">#&gt; Degrees of Freedom: 305 Total (i.e. Null);  267 Residual</span></span>
+<span id="cb4-55"><a href="#cb4-55"></a><span class="co">#&gt; Null Deviance:       237.3 </span></span>
+<span id="cb4-56"><a href="#cb4-56"></a><span class="co">#&gt; Residual Deviance: 95.59     AIC: 173.6</span></span>
+<span id="cb4-57"><a href="#cb4-57"></a><span class="co">#&gt; </span></span>
+<span id="cb4-58"><a href="#cb4-58"></a><span class="co">#&gt; $model_b</span></span>
+<span id="cb4-59"><a href="#cb4-59"></a><span class="co">#&gt; </span></span>
+<span id="cb4-60"><a href="#cb4-60"></a><span class="co">#&gt; Call:  glm(formula = as.formula(formula), family = binomial(link = &quot;logit&quot;), </span></span>
+<span id="cb4-61"><a href="#cb4-61"></a><span class="co">#&gt;     data = data_b)</span></span>
+<span id="cb4-62"><a href="#cb4-62"></a><span class="co">#&gt; </span></span>
+<span id="cb4-63"><a href="#cb4-63"></a><span class="co">#&gt; Coefficients:</span></span>
+<span id="cb4-64"><a href="#cb4-64"></a><span class="co">#&gt;      (Intercept)          schoolMS               age          addressU  </span></span>
+<span id="cb4-65"><a href="#cb4-65"></a><span class="co">#&gt;        -13.03371           2.66321          -0.34577          -0.33386  </span></span>
+<span id="cb4-66"><a href="#cb4-66"></a><span class="co">#&gt;       famsizeLE3          PstatusT              Medu              Fedu  </span></span>
+<span id="cb4-67"><a href="#cb4-67"></a><span class="co">#&gt;         -1.00660          17.07648           0.20849          -0.56054  </span></span>
+<span id="cb4-68"><a href="#cb4-68"></a><span class="co">#&gt;       Mjobhealth         Mjobother      Mjobservices       Mjobteacher  </span></span>
+<span id="cb4-69"><a href="#cb4-69"></a><span class="co">#&gt;         -0.64558          -0.76138          -0.59806          -1.25666  </span></span>
+<span id="cb4-70"><a href="#cb4-70"></a><span class="co">#&gt;       Fjobhealth         Fjobother      Fjobservices       Fjobteacher  </span></span>
+<span id="cb4-71"><a href="#cb4-71"></a><span class="co">#&gt;          1.73168           0.67765           1.20543           2.27924  </span></span>
+<span id="cb4-72"><a href="#cb4-72"></a><span class="co">#&gt;       reasonhome       reasonother  reasonreputation    guardianmother  </span></span>
+<span id="cb4-73"><a href="#cb4-73"></a><span class="co">#&gt;         -0.09858          -0.83649          -0.48737           1.07253  </span></span>
+<span id="cb4-74"><a href="#cb4-74"></a><span class="co">#&gt;    guardianother        traveltime         studytime          failures  </span></span>
+<span id="cb4-75"><a href="#cb4-75"></a><span class="co">#&gt;         -2.14502          -0.28351           0.16529           0.95858  </span></span>
+<span id="cb4-76"><a href="#cb4-76"></a><span class="co">#&gt;     schoolsupyes         famsupyes           paidyes     activitiesyes  </span></span>
+<span id="cb4-77"><a href="#cb4-77"></a><span class="co">#&gt;          1.17323          -0.31895           0.89259          -0.57924  </span></span>
+<span id="cb4-78"><a href="#cb4-78"></a><span class="co">#&gt;       nurseryyes         higheryes       internetyes       romanticyes  </span></span>
+<span id="cb4-79"><a href="#cb4-79"></a><span class="co">#&gt;         -0.01788          -2.61458           0.43417           0.80444  </span></span>
+<span id="cb4-80"><a href="#cb4-80"></a><span class="co">#&gt;           famrel          freetime             goout              Dalc  </span></span>
+<span id="cb4-81"><a href="#cb4-81"></a><span class="co">#&gt;          0.17551          -0.18980          -0.13723          -0.36880  </span></span>
+<span id="cb4-82"><a href="#cb4-82"></a><span class="co">#&gt;             Walc            health          absences  </span></span>
+<span id="cb4-83"><a href="#cb4-83"></a><span class="co">#&gt;          0.32404           0.13664           0.15950  </span></span>
+<span id="cb4-84"><a href="#cb4-84"></a><span class="co">#&gt; </span></span>
+<span id="cb4-85"><a href="#cb4-85"></a><span class="co">#&gt; Degrees of Freedom: 212 Total (i.e. Null);  174 Residual</span></span>
+<span id="cb4-86"><a href="#cb4-86"></a><span class="co">#&gt; Null Deviance:       205.8 </span></span>
+<span id="cb4-87"><a href="#cb4-87"></a><span class="co">#&gt; Residual Deviance: 116.3     AIC: 194.3</span></span></code></pre></div>
+<p>It is also possible to use different <span class="math inline">\(\delta_\beta\)</span> value for each coefficient. In such case, the <code>delta</code> argument should be provided with a vector whose length matches the number of covariates in the model. Mind the intercept and the fact that categorical variables with <span class="math inline">\(k\geq 3\)</span> values are represented in the model by multiple variables. In this example the data has 29 covariates but they are represented by 39 covariates in the model:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb5-2"><a href="#cb5-2"></a>delta_beta_vec &lt;-<span class="st"> </span><span class="fl">0.01</span> <span class="op">*</span><span class="st"> </span><span class="kw">runif</span>(<span class="dv">39</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">print</span>(<span class="kw">beta_equivalence</span>(<span class="dt">model_a =</span> female_model,</span>
+<span id="cb5-4"><a href="#cb5-4"></a>                       <span class="dt">model_b =</span> male_model,</span>
+<span id="cb5-5"><a href="#cb5-5"></a>                       <span class="dt">delta =</span> delta_beta_vec,</span>
+<span id="cb5-6"><a href="#cb5-6"></a>                       <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co">#&gt;       [,1]</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a><span class="co">#&gt; [1,] FALSE</span></span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co">#&gt; </span></span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="co">#&gt; $test_statistic</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">#&gt;          [,1]</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co">#&gt; [1,] 27.98613</span></span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="co">#&gt; </span></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="co">#&gt; $critical_value</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="co">#&gt; [1] 25.92615</span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="co">#&gt; </span></span>
+<span id="cb5-18"><a href="#cb5-18"></a><span class="co">#&gt; $ncp</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a><span class="co">#&gt;           [,1]</span></span>
+<span id="cb5-20"><a href="#cb5-20"></a><span class="co">#&gt; [1,] 0.3496614</span></span>
+<span id="cb5-21"><a href="#cb5-21"></a><span class="co">#&gt; </span></span>
+<span id="cb5-22"><a href="#cb5-22"></a><span class="co">#&gt; $p_value</span></span>
+<span id="cb5-23"><a href="#cb5-23"></a><span class="co">#&gt;           [,1]</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a><span class="co">#&gt; [1,] 0.0890721</span></span></code></pre></div>
+</div>
+<div id="individual-predictive-equivalence-testing" class="section level1">
+<h1>Individual Predictive Equivalence Testing</h1>
+<p>Assume we have an existing model <span class="math inline">\(M^A\)</span> based on population <span class="math inline">\(A\)</span>. This is our <em>source</em>. Given a new <em>target</em> population <span class="math inline">\(B\)</span> of size <span class="math inline">\(k\)</span> and model <span class="math inline">\(M^B\)</span>, we would like to check whether the source model fits the target population. We do so by comparing the log-odds produced by the models for the <em>target</em> population samples. When two models produce equivalent log-odds, individual predictive equivalence is achieved.</p>
+<p>To set the indifference level for the individual predictive equivalence <span class="math inline">\(\delta_\theta\)</span>, we propose looking at the distances between the estimated log odds and the classification threshold. Consider <span class="math inline">\(\{\hat{\theta}_1,...,\hat{\theta}_m\}\)</span> to be the <span class="math inline">\(m\)</span> estimated log-odd values for the test population for the original model, meaning that these are predictions for a test set of population A <span class="math inline">\(X_{test}^A\)</span> using model <span class="math inline">\(M_A\)</span>. In a calibrated logistic regression, the classification of the <span class="math inline">\(i\)</span>th subject by the model (<span class="math inline">\(\hat{y}_i\)</span>) is 1 when <span class="math inline">\(\hat{\theta}_i &gt;0\)</span> and 0 otherwise. The absolute log-odds <span class="math inline">\(\left| \hat{\theta}_i \right|\)</span> is minimal change to the log-odds that could change to the classification. We therefore propose setting the threshold <span class="math inline">\(\delta_\theta\)</span> to be a small quantile <span class="math inline">\(r\)</span> (say <span class="math inline">\(r = 0.1\)</span>) of the observed distribution of absolute log-odds <span class="math display">\[\delta_\theta =  \left| \hat{\theta}\right|_{(\lceil r \cdot m \rceil)}. \]</span></p>
+<p>Using <span class="math inline">\(r=0.05\)</span>, we get that both models provide equivalent log-odds for the female testing data:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>r &lt;-<span class="st"> </span><span class="fl">0.05</span></span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="kw">print</span>(<span class="kw">individual_predictive_equiv</span>(<span class="dt">model_a =</span> female_model,</span>
+<span id="cb6-3"><a href="#cb6-3"></a>                  <span class="dt">model_b =</span> male_model,</span>
+<span id="cb6-4"><a href="#cb6-4"></a>                  <span class="dt">test_data =</span> ptg_stud_f_test,</span>
+<span id="cb6-5"><a href="#cb6-5"></a>                  <span class="dt">r =</span> r,</span>
+<span id="cb6-6"><a href="#cb6-6"></a>                  <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="co">#&gt; </span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co">#&gt; $test_statistic</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="co">#&gt; [1] 1.642021</span></span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="co">#&gt; </span></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="co">#&gt; $critical_value</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="co">#&gt; [1] -1.665151</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a><span class="co">#&gt; </span></span>
+<span id="cb6-16"><a href="#cb6-16"></a><span class="co">#&gt; $xi_bar</span></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co">#&gt; [1] 20.50852</span></span>
+<span id="cb6-18"><a href="#cb6-18"></a><span class="co">#&gt; </span></span>
+<span id="cb6-19"><a href="#cb6-19"></a><span class="co">#&gt; $delta_theta</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a><span class="co">#&gt; [1] 19.03885</span></span>
+<span id="cb6-21"><a href="#cb6-21"></a><span class="co">#&gt; </span></span>
+<span id="cb6-22"><a href="#cb6-22"></a><span class="co">#&gt; $p_value</span></span>
+<span id="cb6-23"><a href="#cb6-23"></a><span class="co">#&gt; [1] 0.9476412</span></span></code></pre></div>
+<p>On the other hand, using <span class="math inline">\(r=0.025\)</span> we get that both models do not provide equivalent log-odds for the male testing data:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>r &lt;-<span class="st"> </span><span class="fl">0.025</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a><span class="kw">print</span>(<span class="kw">individual_predictive_equiv</span>(<span class="dt">model_a =</span> female_model,</span>
+<span id="cb7-3"><a href="#cb7-3"></a>                  <span class="dt">model_b =</span> male_model,</span>
+<span id="cb7-4"><a href="#cb7-4"></a>                  <span class="dt">test_data =</span> ptg_stud_m_test,</span>
+<span id="cb7-5"><a href="#cb7-5"></a>                  <span class="dt">r =</span> r,</span>
+<span id="cb7-6"><a href="#cb7-6"></a>                  <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a><span class="co">#&gt; </span></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="co">#&gt; $test_statistic</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a><span class="co">#&gt; [1] 5.306304</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a><span class="co">#&gt; </span></span>
+<span id="cb7-13"><a href="#cb7-13"></a><span class="co">#&gt; $critical_value</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a><span class="co">#&gt; [1] -1.674689</span></span>
+<span id="cb7-15"><a href="#cb7-15"></a><span class="co">#&gt; </span></span>
+<span id="cb7-16"><a href="#cb7-16"></a><span class="co">#&gt; $xi_bar</span></span>
+<span id="cb7-17"><a href="#cb7-17"></a><span class="co">#&gt; [1] 20.34987</span></span>
+<span id="cb7-18"><a href="#cb7-18"></a><span class="co">#&gt; </span></span>
+<span id="cb7-19"><a href="#cb7-19"></a><span class="co">#&gt; $delta_theta</span></span>
+<span id="cb7-20"><a href="#cb7-20"></a><span class="co">#&gt; [1] 14.84435</span></span>
+<span id="cb7-21"><a href="#cb7-21"></a><span class="co">#&gt; </span></span>
+<span id="cb7-22"><a href="#cb7-22"></a><span class="co">#&gt; $p_value</span></span>
+<span id="cb7-23"><a href="#cb7-23"></a><span class="co">#&gt; [1] 0.9999988</span></span></code></pre></div>
+</div>
+<div id="performance-equivalence-testing" class="section level1">
+<h1>Performance Equivalence Testing</h1>
+<p>The Brier score is reducing the assessment of the overall model performance into a single figure. Given models <span class="math inline">\(M^A,M^B\)</span> and a test set <span class="math inline">\(X^{test}\)</span> of size <span class="math inline">\(m\)</span>, we can assess the equivalence of the Brier scores obtained by the models. As the Brier score is in the range <span class="math inline">\([0,1]\)</span>, the allowed difference <span class="math inline">\(\delta_B\)</span> should be manually selected from the range <span class="math inline">\([0.001, 0.5]\)</span>. As the Brier score tends to converge quickly, it is recommended to use <span class="math inline">\(\delta_B \leq \frac{1}{2\sqrt{m}}\)</span>, where <span class="math inline">\(m\)</span> is the test set size. The <code>dv_index</code> variable indicates the column number of the dependent variable.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>testing_data &lt;-<span class="st"> </span>ptg_stud_m_test</span>
+<span id="cb8-2"><a href="#cb8-2"></a>delta_b &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">/</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">nrow</span>(testing_data)))</span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="kw">print</span>(<span class="kw">performance_equiv</span>(<span class="dt">model_a =</span> female_model, </span>
+<span id="cb8-4"><a href="#cb8-4"></a>                        <span class="dt">model_b =</span> male_model, </span>
+<span id="cb8-5"><a href="#cb8-5"></a>                        <span class="dt">test_data =</span> testing_data,</span>
+<span id="cb8-6"><a href="#cb8-6"></a>                        <span class="dt">dv_index =</span> <span class="dv">30</span>,</span>
+<span id="cb8-7"><a href="#cb8-7"></a>                        <span class="dt">t =</span> delta_b,</span>
+<span id="cb8-8"><a href="#cb8-8"></a>                        <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="co">#&gt; </span></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="co">#&gt; $brier_score_ac</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="co">#&gt; [1] 0.1886792</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a><span class="co">#&gt; </span></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="co">#&gt; $brier_score_bc</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="co">#&gt; [1] 0.1239275</span></span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="co">#&gt; </span></span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="co">#&gt; $diff_sd</span></span>
+<span id="cb8-19"><a href="#cb8-19"></a><span class="co">#&gt; [1] 0.2587996</span></span>
+<span id="cb8-20"><a href="#cb8-20"></a><span class="co">#&gt; </span></span>
+<span id="cb8-21"><a href="#cb8-21"></a><span class="co">#&gt; $test_stat_l</span></span>
+<span id="cb8-22"><a href="#cb8-22"></a><span class="co">#&gt; [1] 2.683232</span></span>
+<span id="cb8-23"><a href="#cb8-23"></a><span class="co">#&gt; </span></span>
+<span id="cb8-24"><a href="#cb8-24"></a><span class="co">#&gt; $test_stat_u</span></span>
+<span id="cb8-25"><a href="#cb8-25"></a><span class="co">#&gt; [1] 0.9597379</span></span>
+<span id="cb8-26"><a href="#cb8-26"></a><span class="co">#&gt; </span></span>
+<span id="cb8-27"><a href="#cb8-27"></a><span class="co">#&gt; $crit_val</span></span>
+<span id="cb8-28"><a href="#cb8-28"></a><span class="co">#&gt; [1] 1.674689</span></span>
+<span id="cb8-29"><a href="#cb8-29"></a><span class="co">#&gt; </span></span>
+<span id="cb8-30"><a href="#cb8-30"></a><span class="co">#&gt; $delta_B</span></span>
+<span id="cb8-31"><a href="#cb8-31"></a><span class="co">#&gt; [1] 0.03063414</span></span>
+<span id="cb8-32"><a href="#cb8-32"></a><span class="co">#&gt; </span></span>
+<span id="cb8-33"><a href="#cb8-33"></a><span class="co">#&gt; $p_value_l</span></span>
+<span id="cb8-34"><a href="#cb8-34"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb8-35"><a href="#cb8-35"></a><span class="co">#&gt; </span></span>
+<span id="cb8-36"><a href="#cb8-36"></a><span class="co">#&gt; $p_value_u</span></span>
+<span id="cb8-37"><a href="#cb8-37"></a><span class="co">#&gt; [1] 7.997396e-36</span></span>
+<span id="cb8-38"><a href="#cb8-38"></a></span>
+<span id="cb8-39"><a href="#cb8-39"></a></span>
+<span id="cb8-40"><a href="#cb8-40"></a><span class="kw">print</span>(<span class="kw">performance_equiv</span>(<span class="dt">model_a =</span> female_model, </span>
+<span id="cb8-41"><a href="#cb8-41"></a>                        <span class="dt">model_b =</span> male_model, </span>
+<span id="cb8-42"><a href="#cb8-42"></a>                        <span class="dt">test_data =</span> ptg_stud_f_test,</span>
+<span id="cb8-43"><a href="#cb8-43"></a>                        <span class="dt">dv_index =</span> <span class="dv">30</span>,</span>
+<span id="cb8-44"><a href="#cb8-44"></a>                        <span class="dt">t =</span> <span class="fl">0.1</span>,</span>
+<span id="cb8-45"><a href="#cb8-45"></a>                        <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb8-46"><a href="#cb8-46"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb8-47"><a href="#cb8-47"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb8-48"><a href="#cb8-48"></a><span class="co">#&gt; </span></span>
+<span id="cb8-49"><a href="#cb8-49"></a><span class="co">#&gt; $brier_score_ac</span></span>
+<span id="cb8-50"><a href="#cb8-50"></a><span class="co">#&gt; [1] 0.1176009</span></span>
+<span id="cb8-51"><a href="#cb8-51"></a><span class="co">#&gt; </span></span>
+<span id="cb8-52"><a href="#cb8-52"></a><span class="co">#&gt; $brier_score_bc</span></span>
+<span id="cb8-53"><a href="#cb8-53"></a><span class="co">#&gt; [1] 0.09829823</span></span>
+<span id="cb8-54"><a href="#cb8-54"></a><span class="co">#&gt; </span></span>
+<span id="cb8-55"><a href="#cb8-55"></a><span class="co">#&gt; $diff_sd</span></span>
+<span id="cb8-56"><a href="#cb8-56"></a><span class="co">#&gt; [1] 0.2092197</span></span>
+<span id="cb8-57"><a href="#cb8-57"></a><span class="co">#&gt; </span></span>
+<span id="cb8-58"><a href="#cb8-58"></a><span class="co">#&gt; $test_stat_l</span></span>
+<span id="cb8-59"><a href="#cb8-59"></a><span class="co">#&gt; [1] 2.235055</span></span>
+<span id="cb8-60"><a href="#cb8-60"></a><span class="co">#&gt; </span></span>
+<span id="cb8-61"><a href="#cb8-61"></a><span class="co">#&gt; $test_stat_u</span></span>
+<span id="cb8-62"><a href="#cb8-62"></a><span class="co">#&gt; [1] -0.6158915</span></span>
+<span id="cb8-63"><a href="#cb8-63"></a><span class="co">#&gt; </span></span>
+<span id="cb8-64"><a href="#cb8-64"></a><span class="co">#&gt; $crit_val</span></span>
+<span id="cb8-65"><a href="#cb8-65"></a><span class="co">#&gt; [1] 1.665151</span></span>
+<span id="cb8-66"><a href="#cb8-66"></a><span class="co">#&gt; </span></span>
+<span id="cb8-67"><a href="#cb8-67"></a><span class="co">#&gt; $delta_B</span></span>
+<span id="cb8-68"><a href="#cb8-68"></a><span class="co">#&gt; [1] 0.03398727</span></span>
+<span id="cb8-69"><a href="#cb8-69"></a><span class="co">#&gt; </span></span>
+<span id="cb8-70"><a href="#cb8-70"></a><span class="co">#&gt; $p_value_l</span></span>
+<span id="cb8-71"><a href="#cb8-71"></a><span class="co">#&gt; [1] 1</span></span>
+<span id="cb8-72"><a href="#cb8-72"></a><span class="co">#&gt; </span></span>
+<span id="cb8-73"><a href="#cb8-73"></a><span class="co">#&gt; $p_value_u</span></span>
+<span id="cb8-74"><a href="#cb8-74"></a><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+</div>
+<div class="footnotes">
+<hr />
+<ol>
+<li id="fn1"><p>P. Cortez and A. Silva. Using Data Mining to Predict Secondary School Student Performance. In A. Brito and J. Teixeira Eds., Proceedings of 5th FUture BUsiness TEChnology Conference (FUBUTEC 2008) pp. 5-12, Porto, Portugal, April, 2008, EUROSIS, ISBN 978-9077381-39-7. See also <a href="http://www3.dsi.uminho.pt/pcortez/student.pdf" class="uri">http://www3.dsi.uminho.pt/pcortez/student.pdf</a><a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>Data retrieved from <a href="https://archive.ics.uci.edu/ml/datasets/student+performance">the UC Irvine Machine Learning Repository</a>.<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
+</ol>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

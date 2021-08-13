@@ -1,0 +1,150 @@
+---
+title: "LogRegEquiv Vignette"
+author: "Guy Ashiri-Prossner"
+date: "`r format(Sys.Date(), '%d.%m.%Y')`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{my-vignette}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE
+)
+```
+
+This package provides tools for assessing the differences between logistic 
+regression model-fits across sub-populations. For example, having data with
+sub-populations based on gender or native language may or may not require 
+separate models.
+
+Consider two sub-populations of Portuguese Language course students, with 
+29 covariates and an output variable indicating whether the student has failed 
+the course. These sub-populations differ by gender (M/F). These two 
+sub-populations provide two logistic regression models, which may or may not 
+be equivalent.
+
+The purpose of this vignette is to exemplify to usage of equivalence tests
+for different stages in the model: the linear coefficients, the vector of 
+per-example log odds ratio and the mean-square error of prediction.
+Each method provides a different aspect of possible model equivalence.
+
+The data used is taken from the Student Performance Data[^1]^,^[^2].
+
+[^1]: P. Cortez and A. Silva. Using Data Mining to Predict Secondary School Student Performance. In A. Brito and J. Teixeira Eds., Proceedings of 5th FUture BUsiness TEChnology Conference (FUBUTEC 2008) pp. 5-12, Porto, Portugal, April, 2008, EUROSIS, ISBN 978-9077381-39-7. See also <http://www3.dsi.uminho.pt/pcortez/student.pdf>
+[^2]: Data retrieved from [the UC Irvine Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/student+performance).
+
+
+```{r setup}
+library(LogRegEquiv)
+```
+
+# Descriptive Equivalence Testing
+
+The regression coefficient vectors provide us an insight to how a model
+describes the phenomenon. In our case, how is the binary variable `final_failure`
+affected by the covariates. When two models describe a phenomenon in a similar
+manner, descriptive equivalence is achieved.
+
+```{r model construction, echo=TRUE}
+formula <- "final_fail ~ ."
+female_model <- glm(formula = formula, family = binomial(link = "logit"),
+                    data = ptg_stud_f_train)
+male_model <- glm(formula = formula, family = binomial(link = "logit"),
+                    data = ptg_stud_m_train)
+```
+
+Denote $\delta_\beta$ as the maximal tolerated difference per coefficient, in this case
+$\delta_\beta=0.1$.
+
+```{r beta equivalence, echo=TRUE}
+delta_beta <- 0.1
+print(beta_equivalence(model_a = female_model,
+                       model_b = male_model,
+                       delta = delta_beta,
+                       alpha = 0.05))
+```
+
+It is possible to assess descriptive equivalence even without creating the models, just by providing the `descriptive_equiv` function a regression formula, two datasets and a `delta` argument:
+
+```{r coef vector equivalence, echo=TRUE}
+print(descriptive_equiv(data_a = ptg_stud_f_train,
+                              data_b = ptg_stud_m_train, 
+                              formula = formula,
+                              delta = delta_beta,
+                              alpha = 0.05))
+```
+
+It is also possible to use different $\delta_\beta$ value for each coefficient. In such case, the `delta` argument should be provided with a vector whose length matches the number of covariates in the model. Mind the intercept and the fact that categorical variables with $k\geq 3$ values are represented in the model by multiple variables. In this example the data has 29 covariates but they are represented by `r length(female_model$coefficients)` covariates in the model:
+
+```{r beta vectorial delta, echo=TRUE}
+set.seed(1)
+delta_beta_vec <- 0.01 * runif(39)
+print(beta_equivalence(model_a = female_model,
+                       model_b = male_model,
+                       delta = delta_beta_vec,
+                       alpha = 0.05))
+```
+
+
+# Individual Predictive Equivalence Testing
+
+Assume we have an existing model $M^A$ based on population $A$. This is our *source*. Given a new *target* population $B$ of size $k$ and model $M^B$, we would like to check whether the source model fits the target population. We do so by comparing the log-odds produced by the models for the *target* population samples. When two models produce equivalent log-odds, individual predictive equivalence is achieved.
+
+To set the indifference level for the individual predictive equivalence $\delta_\theta$, we propose looking 
+at the distances between the estimated log odds and the classification threshold. 
+Consider $\{\hat{\theta}_1,...,\hat{\theta}_m\}$ to be the $m$ estimated log-odd values for the test population for the original model, meaning that these are predictions for a test set of population A $X_{test}^A$ using model $M_A$. 
+In a calibrated logistic regression, the classification of the $i$th subject by the model ($\hat{y}_i$) is 1 when $\hat{\theta}_i >0$ and 0 otherwise. The absolute log-odds $\left| \hat{\theta}_i \right|$ is minimal change to the log-odds that could change to the classification.
+We therefore propose setting the threshold $\delta_\theta$ to be a small quantile $r$ (say $r = 0.1$) of the observed distribution of absolute log-odds 
+\[\delta_\theta =  \left| \hat{\theta}\right|_{(\lceil r \cdot m \rceil)}. \]
+
+Using $r=0.05$, we get that both models provide equivalent log-odds for the female testing data:
+
+```{r individual predictive equivalence female test, echo=TRUE}
+r <- 0.05
+print(individual_predictive_equiv(model_a = female_model,
+                  model_b = male_model,
+                  test_data = ptg_stud_f_test,
+                  r = r,
+                  alpha = 0.05))
+```
+
+On the other hand, using $r=0.025$ we get that both models do not provide equivalent log-odds for the male testing data:
+
+```{r individual predictive equivalence male test, echo=TRUE}
+r <- 0.025
+print(individual_predictive_equiv(model_a = female_model,
+                  model_b = male_model,
+                  test_data = ptg_stud_m_test,
+                  r = r,
+                  alpha = 0.05))
+```
+
+
+# Performance Equivalence Testing
+
+The Brier score is reducing the assessment of the overall model performance into a single figure. Given models $M^A,M^B$ and a test set $X^{test}$ of size $m$, we can assess the equivalence of the Brier scores obtained by the models. As the Brier score is in the range $[0,1]$, the allowed difference $\delta_B$ should be manually selected from the range $[0.001, 0.5]$. As the Brier score tends to converge quickly, it is recommended to use $\delta_B \leq \frac{1}{2\sqrt{m}}$, where $m$ is the test set size.
+The `dv_index` variable indicates the column number of the dependent variable.
+
+```{r performance equivalence female test, echo=TRUE}
+testing_data <- ptg_stud_m_test
+delta_b <- 1 / (2 * sqrt(nrow(testing_data)))
+print(performance_equiv(model_a = female_model, 
+                        model_b = male_model, 
+                        test_data = testing_data,
+                        dv_index = 30,
+                        t = delta_b,
+                        alpha = 0.05))
+
+
+print(performance_equiv(model_a = female_model, 
+                        model_b = male_model, 
+                        test_data = ptg_stud_f_test,
+                        dv_index = 30,
+                        t = 0.1,
+                        alpha = 0.05))
+```
