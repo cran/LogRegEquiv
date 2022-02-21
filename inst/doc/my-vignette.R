@@ -55,12 +55,11 @@ print(individual_predictive_equiv(model_a = female_model,
 
 ## ----performance equivalence female test, echo=TRUE---------------------------
 testing_data <- ptg_stud_m_test
-delta_b <- 1 / (2 * sqrt(nrow(testing_data)))
 print(performance_equiv(model_a = female_model, 
                         model_b = male_model, 
                         test_data = testing_data,
                         dv_index = 30,
-                        t = delta_b,
+                        delta_B = 1.1,
                         alpha = 0.05))
 
 
@@ -68,6 +67,6 @@ print(performance_equiv(model_a = female_model,
                         model_b = male_model, 
                         test_data = ptg_stud_f_test,
                         dv_index = 30,
-                        t = 0.1,
+                        delta_B = 1.1,
                         alpha = 0.05))
 

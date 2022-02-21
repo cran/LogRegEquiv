@@ -4,7 +4,14 @@
 \alias{performance_equiv}
 \title{performance_equiv function}
 \usage{
-performance_equiv(model_a, model_b, test_data, dv_index, t = 0.1, alpha = 0.05)
+performance_equiv(
+  model_a,
+  model_b,
+  test_data,
+  dv_index,
+  delta_B = 1.1,
+  alpha = 0.05
+)
 }
 \arguments{
 \item{model_a}{logistic regression model \eqn{M_A}}
@@ -15,7 +22,7 @@ performance_equiv(model_a, model_b, test_data, dv_index, t = 0.1, alpha = 0.05)
 
 \item{dv_index}{column number of the dependent variable}
 
-\item{t}{acceptable tolerance level (defaults to 0.1)}
+\item{delta_B}{acceptable score degradation (defaults to 1.1)}
 
 \item{alpha}{significance level \eqn{\alpha} (defaults to 0.05)}
 }
@@ -25,7 +32,8 @@ performance_equiv(model_a, model_b, test_data, dv_index, t = 0.1, alpha = 0.05)
       Brier scores for the given test data? (boolean)}
   \item{\code{brier_score_ac}}{\eqn{M_A} Brier score on the testing data}
   \item{\code{brier_score_bc}}{\eqn{M_B} Brier score on the testing data}
-  \item{\code{diff_sd}}{SD of the Brier differences}
+  \item{\code{diff_sd_l}}{SD of the lower Brier difference \eqn{BS^A-\delta_B^2BS^B}}
+  \item{\code{diff_sd_u}}{SD of the upper Brier difference \eqn{BS^A-\delta_B^{-2}BS^B}}
   \item{\code{test_stat_l}}{\eqn{t_L} equivalence boundary for the test}
   \item{\code{test_stat_u}}{\eqn{t_U} equivalence boundary for the test}
   \item{\code{crit_val}}{a level-\eqn{\alpha} critical value for the test}
@@ -36,7 +44,7 @@ performance_equiv(model_a, model_b, test_data, dv_index, t = 0.1, alpha = 0.05)
 }
 \description{
 This function takes two logistic regression models \eqn{M_A, M_B},
-    test data, significance level \eqn{\alpha} and sensitivity level
-    \eqn{\delta_B}. It checks whether the models perform equivalently on the
-    test set and returns various figures.
+    test data, significance level \eqn{\alpha} and acceptable score
+    degradation \eqn{\delta_B}. It checks whether the models perform
+    equivalently on the test set and returns various figures.
 }

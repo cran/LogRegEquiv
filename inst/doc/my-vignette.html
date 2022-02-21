@@ -335,11 +335,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">LogRegEquiv Vignette</h1>
 <h4 class="author">Guy Ashiri-Prossner</h4>
-<h4 class="date">12.08.2021</h4>
+<h4 class="date">21.02.2022</h4>
 
 
 
-<p>This package provides tools for assessing the differences between logistic regression model-fits across sub-populations. For example, having data with sub-populations based on gender or native language may or may not require separate models.</p>
+<p>This package provides tools for assessing the differences between logistic regression model-fits across sub-populations. For example, having data with sub-populations based on gender may or may not require separate models.</p>
 <p>Consider two sub-populations of Portuguese Language course students, with 29 covariates and an output variable indicating whether the student has failed the course. These sub-populations differ by gender (M/F). These two sub-populations provide two logistic regression models, which may or may not be equivalent.</p>
 <p>The purpose of this vignette is to exemplify to usage of equivalence tests for different stages in the model: the linear coefficients, the vector of per-example log odds ratio and the mean-square error of prediction. Each method provides a different aspect of possible model equivalence.</p>
 <p>The data used is taken from the Student Performance Data<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a><sup>,</sup><a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a>.</p>
@@ -545,81 +545,86 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="performance-equivalence-testing" class="section level1">
 <h1>Performance Equivalence Testing</h1>
-<p>The Brier score is reducing the assessment of the overall model performance into a single figure. Given models <span class="math inline">\(M^A,M^B\)</span> and a test set <span class="math inline">\(X^{test}\)</span> of size <span class="math inline">\(m\)</span>, we can assess the equivalence of the Brier scores obtained by the models. As the Brier score is in the range <span class="math inline">\([0,1]\)</span>, the allowed difference <span class="math inline">\(\delta_B\)</span> should be manually selected from the range <span class="math inline">\([0.001, 0.5]\)</span>. As the Brier score tends to converge quickly, it is recommended to use <span class="math inline">\(\delta_B \leq \frac{1}{2\sqrt{m}}\)</span>, where <span class="math inline">\(m\)</span> is the test set size. The <code>dv_index</code> variable indicates the column number of the dependent variable.</p>
+<p>The Brier score is reducing the assessment of the overall model performance into a single figure. Given models <span class="math inline">\(M^A,M^B\)</span> and a test set <span class="math inline">\(X^{test}\)</span> of size <span class="math inline">\(m\)</span>, we can assess the equivalence of the Brier scores obtained by the models. The acceptable score degradation <span class="math inline">\(\delta_B&gt;1\)</span> should be selected, we then see the Brier scores as equivalent if <span class="math inline">\(\frac{1}{\delta_B^2}&lt;\frac{BS^B}{BS^A}&lt;\delta_B^2\)</span>. The <code>dv_index</code> variable indicates the column number of the dependent variable.</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>testing_data &lt;-<span class="st"> </span>ptg_stud_m_test</span>
-<span id="cb8-2"><a href="#cb8-2"></a>delta_b &lt;-<span class="st"> </span><span class="dv">1</span> <span class="op">/</span><span class="st"> </span>(<span class="dv">2</span> <span class="op">*</span><span class="st"> </span><span class="kw">sqrt</span>(<span class="kw">nrow</span>(testing_data)))</span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="kw">print</span>(<span class="kw">performance_equiv</span>(<span class="dt">model_a =</span> female_model, </span>
-<span id="cb8-4"><a href="#cb8-4"></a>                        <span class="dt">model_b =</span> male_model, </span>
-<span id="cb8-5"><a href="#cb8-5"></a>                        <span class="dt">test_data =</span> testing_data,</span>
-<span id="cb8-6"><a href="#cb8-6"></a>                        <span class="dt">dv_index =</span> <span class="dv">30</span>,</span>
-<span id="cb8-7"><a href="#cb8-7"></a>                        <span class="dt">t =</span> delta_b,</span>
-<span id="cb8-8"><a href="#cb8-8"></a>                        <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
-<span id="cb8-9"><a href="#cb8-9"></a><span class="co">#&gt; $equivalence</span></span>
-<span id="cb8-10"><a href="#cb8-10"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb8-11"><a href="#cb8-11"></a><span class="co">#&gt; </span></span>
-<span id="cb8-12"><a href="#cb8-12"></a><span class="co">#&gt; $brier_score_ac</span></span>
-<span id="cb8-13"><a href="#cb8-13"></a><span class="co">#&gt; [1] 0.1886792</span></span>
-<span id="cb8-14"><a href="#cb8-14"></a><span class="co">#&gt; </span></span>
-<span id="cb8-15"><a href="#cb8-15"></a><span class="co">#&gt; $brier_score_bc</span></span>
-<span id="cb8-16"><a href="#cb8-16"></a><span class="co">#&gt; [1] 0.1239275</span></span>
-<span id="cb8-17"><a href="#cb8-17"></a><span class="co">#&gt; </span></span>
-<span id="cb8-18"><a href="#cb8-18"></a><span class="co">#&gt; $diff_sd</span></span>
-<span id="cb8-19"><a href="#cb8-19"></a><span class="co">#&gt; [1] 0.2587996</span></span>
-<span id="cb8-20"><a href="#cb8-20"></a><span class="co">#&gt; </span></span>
-<span id="cb8-21"><a href="#cb8-21"></a><span class="co">#&gt; $test_stat_l</span></span>
-<span id="cb8-22"><a href="#cb8-22"></a><span class="co">#&gt; [1] 2.683232</span></span>
-<span id="cb8-23"><a href="#cb8-23"></a><span class="co">#&gt; </span></span>
-<span id="cb8-24"><a href="#cb8-24"></a><span class="co">#&gt; $test_stat_u</span></span>
-<span id="cb8-25"><a href="#cb8-25"></a><span class="co">#&gt; [1] 0.9597379</span></span>
-<span id="cb8-26"><a href="#cb8-26"></a><span class="co">#&gt; </span></span>
-<span id="cb8-27"><a href="#cb8-27"></a><span class="co">#&gt; $crit_val</span></span>
-<span id="cb8-28"><a href="#cb8-28"></a><span class="co">#&gt; [1] 1.674689</span></span>
-<span id="cb8-29"><a href="#cb8-29"></a><span class="co">#&gt; </span></span>
-<span id="cb8-30"><a href="#cb8-30"></a><span class="co">#&gt; $delta_B</span></span>
-<span id="cb8-31"><a href="#cb8-31"></a><span class="co">#&gt; [1] 0.03063414</span></span>
-<span id="cb8-32"><a href="#cb8-32"></a><span class="co">#&gt; </span></span>
-<span id="cb8-33"><a href="#cb8-33"></a><span class="co">#&gt; $p_value_l</span></span>
-<span id="cb8-34"><a href="#cb8-34"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb8-35"><a href="#cb8-35"></a><span class="co">#&gt; </span></span>
-<span id="cb8-36"><a href="#cb8-36"></a><span class="co">#&gt; $p_value_u</span></span>
-<span id="cb8-37"><a href="#cb8-37"></a><span class="co">#&gt; [1] 7.997396e-36</span></span>
-<span id="cb8-38"><a href="#cb8-38"></a></span>
-<span id="cb8-39"><a href="#cb8-39"></a></span>
-<span id="cb8-40"><a href="#cb8-40"></a><span class="kw">print</span>(<span class="kw">performance_equiv</span>(<span class="dt">model_a =</span> female_model, </span>
-<span id="cb8-41"><a href="#cb8-41"></a>                        <span class="dt">model_b =</span> male_model, </span>
-<span id="cb8-42"><a href="#cb8-42"></a>                        <span class="dt">test_data =</span> ptg_stud_f_test,</span>
-<span id="cb8-43"><a href="#cb8-43"></a>                        <span class="dt">dv_index =</span> <span class="dv">30</span>,</span>
-<span id="cb8-44"><a href="#cb8-44"></a>                        <span class="dt">t =</span> <span class="fl">0.1</span>,</span>
-<span id="cb8-45"><a href="#cb8-45"></a>                        <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
-<span id="cb8-46"><a href="#cb8-46"></a><span class="co">#&gt; $equivalence</span></span>
-<span id="cb8-47"><a href="#cb8-47"></a><span class="co">#&gt; [1] FALSE</span></span>
-<span id="cb8-48"><a href="#cb8-48"></a><span class="co">#&gt; </span></span>
-<span id="cb8-49"><a href="#cb8-49"></a><span class="co">#&gt; $brier_score_ac</span></span>
-<span id="cb8-50"><a href="#cb8-50"></a><span class="co">#&gt; [1] 0.1176009</span></span>
-<span id="cb8-51"><a href="#cb8-51"></a><span class="co">#&gt; </span></span>
-<span id="cb8-52"><a href="#cb8-52"></a><span class="co">#&gt; $brier_score_bc</span></span>
-<span id="cb8-53"><a href="#cb8-53"></a><span class="co">#&gt; [1] 0.09829823</span></span>
-<span id="cb8-54"><a href="#cb8-54"></a><span class="co">#&gt; </span></span>
-<span id="cb8-55"><a href="#cb8-55"></a><span class="co">#&gt; $diff_sd</span></span>
-<span id="cb8-56"><a href="#cb8-56"></a><span class="co">#&gt; [1] 0.2092197</span></span>
-<span id="cb8-57"><a href="#cb8-57"></a><span class="co">#&gt; </span></span>
-<span id="cb8-58"><a href="#cb8-58"></a><span class="co">#&gt; $test_stat_l</span></span>
-<span id="cb8-59"><a href="#cb8-59"></a><span class="co">#&gt; [1] 2.235055</span></span>
-<span id="cb8-60"><a href="#cb8-60"></a><span class="co">#&gt; </span></span>
-<span id="cb8-61"><a href="#cb8-61"></a><span class="co">#&gt; $test_stat_u</span></span>
-<span id="cb8-62"><a href="#cb8-62"></a><span class="co">#&gt; [1] -0.6158915</span></span>
-<span id="cb8-63"><a href="#cb8-63"></a><span class="co">#&gt; </span></span>
-<span id="cb8-64"><a href="#cb8-64"></a><span class="co">#&gt; $crit_val</span></span>
-<span id="cb8-65"><a href="#cb8-65"></a><span class="co">#&gt; [1] 1.665151</span></span>
-<span id="cb8-66"><a href="#cb8-66"></a><span class="co">#&gt; </span></span>
-<span id="cb8-67"><a href="#cb8-67"></a><span class="co">#&gt; $delta_B</span></span>
-<span id="cb8-68"><a href="#cb8-68"></a><span class="co">#&gt; [1] 0.03398727</span></span>
-<span id="cb8-69"><a href="#cb8-69"></a><span class="co">#&gt; </span></span>
-<span id="cb8-70"><a href="#cb8-70"></a><span class="co">#&gt; $p_value_l</span></span>
-<span id="cb8-71"><a href="#cb8-71"></a><span class="co">#&gt; [1] 1</span></span>
-<span id="cb8-72"><a href="#cb8-72"></a><span class="co">#&gt; </span></span>
-<span id="cb8-73"><a href="#cb8-73"></a><span class="co">#&gt; $p_value_u</span></span>
-<span id="cb8-74"><a href="#cb8-74"></a><span class="co">#&gt; [1] 0</span></span></code></pre></div>
+<span id="cb8-2"><a href="#cb8-2"></a><span class="kw">print</span>(<span class="kw">performance_equiv</span>(<span class="dt">model_a =</span> female_model, </span>
+<span id="cb8-3"><a href="#cb8-3"></a>                        <span class="dt">model_b =</span> male_model, </span>
+<span id="cb8-4"><a href="#cb8-4"></a>                        <span class="dt">test_data =</span> testing_data,</span>
+<span id="cb8-5"><a href="#cb8-5"></a>                        <span class="dt">dv_index =</span> <span class="dv">30</span>,</span>
+<span id="cb8-6"><a href="#cb8-6"></a>                        <span class="dt">delta_B =</span> <span class="fl">1.1</span>,</span>
+<span id="cb8-7"><a href="#cb8-7"></a>                        <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co">#&gt; </span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="co">#&gt; $brier_score_ac</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="co">#&gt; [1] 0.1886792</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="co">#&gt; </span></span>
+<span id="cb8-14"><a href="#cb8-14"></a><span class="co">#&gt; $brier_score_bc</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a><span class="co">#&gt; [1] 0.1239275</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a><span class="co">#&gt; </span></span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="co">#&gt; $diff_sd_l</span></span>
+<span id="cb8-18"><a href="#cb8-18"></a><span class="co">#&gt; [1] 0.2183946</span></span>
+<span id="cb8-19"><a href="#cb8-19"></a><span class="co">#&gt; </span></span>
+<span id="cb8-20"><a href="#cb8-20"></a><span class="co">#&gt; $diff_sd_u</span></span>
+<span id="cb8-21"><a href="#cb8-21"></a><span class="co">#&gt; [1] 0.3207404</span></span>
+<span id="cb8-22"><a href="#cb8-22"></a><span class="co">#&gt; </span></span>
+<span id="cb8-23"><a href="#cb8-23"></a><span class="co">#&gt; $test_stat_l</span></span>
+<span id="cb8-24"><a href="#cb8-24"></a><span class="co">#&gt; [1] -1.066901</span></span>
+<span id="cb8-25"><a href="#cb8-25"></a><span class="co">#&gt; </span></span>
+<span id="cb8-26"><a href="#cb8-26"></a><span class="co">#&gt; $test_stat_u</span></span>
+<span id="cb8-27"><a href="#cb8-27"></a><span class="co">#&gt; [1] -2.369071</span></span>
+<span id="cb8-28"><a href="#cb8-28"></a><span class="co">#&gt; </span></span>
+<span id="cb8-29"><a href="#cb8-29"></a><span class="co">#&gt; $crit_val</span></span>
+<span id="cb8-30"><a href="#cb8-30"></a><span class="co">#&gt; [1] 2.006647</span></span>
+<span id="cb8-31"><a href="#cb8-31"></a><span class="co">#&gt; </span></span>
+<span id="cb8-32"><a href="#cb8-32"></a><span class="co">#&gt; $epsilon_B</span></span>
+<span id="cb8-33"><a href="#cb8-33"></a><span class="co">#&gt; [1] 1.21</span></span>
+<span id="cb8-34"><a href="#cb8-34"></a><span class="co">#&gt; </span></span>
+<span id="cb8-35"><a href="#cb8-35"></a><span class="co">#&gt; $p_value_l</span></span>
+<span id="cb8-36"><a href="#cb8-36"></a><span class="co">#&gt; [1] 0.1454725</span></span>
+<span id="cb8-37"><a href="#cb8-37"></a><span class="co">#&gt; </span></span>
+<span id="cb8-38"><a href="#cb8-38"></a><span class="co">#&gt; $p_value_u</span></span>
+<span id="cb8-39"><a href="#cb8-39"></a><span class="co">#&gt; [1] 0.01079071</span></span>
+<span id="cb8-40"><a href="#cb8-40"></a></span>
+<span id="cb8-41"><a href="#cb8-41"></a></span>
+<span id="cb8-42"><a href="#cb8-42"></a><span class="kw">print</span>(<span class="kw">performance_equiv</span>(<span class="dt">model_a =</span> female_model, </span>
+<span id="cb8-43"><a href="#cb8-43"></a>                        <span class="dt">model_b =</span> male_model, </span>
+<span id="cb8-44"><a href="#cb8-44"></a>                        <span class="dt">test_data =</span> ptg_stud_f_test,</span>
+<span id="cb8-45"><a href="#cb8-45"></a>                        <span class="dt">dv_index =</span> <span class="dv">30</span>,</span>
+<span id="cb8-46"><a href="#cb8-46"></a>                        <span class="dt">delta_B =</span> <span class="fl">1.1</span>,</span>
+<span id="cb8-47"><a href="#cb8-47"></a>                        <span class="dt">alpha =</span> <span class="fl">0.05</span>))</span>
+<span id="cb8-48"><a href="#cb8-48"></a><span class="co">#&gt; $equivalence</span></span>
+<span id="cb8-49"><a href="#cb8-49"></a><span class="co">#&gt; [1] FALSE</span></span>
+<span id="cb8-50"><a href="#cb8-50"></a><span class="co">#&gt; </span></span>
+<span id="cb8-51"><a href="#cb8-51"></a><span class="co">#&gt; $brier_score_ac</span></span>
+<span id="cb8-52"><a href="#cb8-52"></a><span class="co">#&gt; [1] 0.1176009</span></span>
+<span id="cb8-53"><a href="#cb8-53"></a><span class="co">#&gt; </span></span>
+<span id="cb8-54"><a href="#cb8-54"></a><span class="co">#&gt; $brier_score_bc</span></span>
+<span id="cb8-55"><a href="#cb8-55"></a><span class="co">#&gt; [1] 0.09829823</span></span>
+<span id="cb8-56"><a href="#cb8-56"></a><span class="co">#&gt; </span></span>
+<span id="cb8-57"><a href="#cb8-57"></a><span class="co">#&gt; $diff_sd_l</span></span>
+<span id="cb8-58"><a href="#cb8-58"></a><span class="co">#&gt; [1] 0.1817481</span></span>
+<span id="cb8-59"><a href="#cb8-59"></a><span class="co">#&gt; </span></span>
+<span id="cb8-60"><a href="#cb8-60"></a><span class="co">#&gt; $diff_sd_u</span></span>
+<span id="cb8-61"><a href="#cb8-61"></a><span class="co">#&gt; [1] 0.2553075</span></span>
+<span id="cb8-62"><a href="#cb8-62"></a><span class="co">#&gt; </span></span>
+<span id="cb8-63"><a href="#cb8-63"></a><span class="co">#&gt; $test_stat_l</span></span>
+<span id="cb8-64"><a href="#cb8-64"></a><span class="co">#&gt; [1] 0.05346545</span></span>
+<span id="cb8-65"><a href="#cb8-65"></a><span class="co">#&gt; </span></span>
+<span id="cb8-66"><a href="#cb8-66"></a><span class="co">#&gt; $test_stat_u</span></span>
+<span id="cb8-67"><a href="#cb8-67"></a><span class="co">#&gt; [1] -1.51225</span></span>
+<span id="cb8-68"><a href="#cb8-68"></a><span class="co">#&gt; </span></span>
+<span id="cb8-69"><a href="#cb8-69"></a><span class="co">#&gt; $crit_val</span></span>
+<span id="cb8-70"><a href="#cb8-70"></a><span class="co">#&gt; [1] 1.991673</span></span>
+<span id="cb8-71"><a href="#cb8-71"></a><span class="co">#&gt; </span></span>
+<span id="cb8-72"><a href="#cb8-72"></a><span class="co">#&gt; $epsilon_B</span></span>
+<span id="cb8-73"><a href="#cb8-73"></a><span class="co">#&gt; [1] 1.21</span></span>
+<span id="cb8-74"><a href="#cb8-74"></a><span class="co">#&gt; </span></span>
+<span id="cb8-75"><a href="#cb8-75"></a><span class="co">#&gt; $p_value_l</span></span>
+<span id="cb8-76"><a href="#cb8-76"></a><span class="co">#&gt; [1] 0.5212493</span></span>
+<span id="cb8-77"><a href="#cb8-77"></a><span class="co">#&gt; </span></span>
+<span id="cb8-78"><a href="#cb8-78"></a><span class="co">#&gt; $p_value_u</span></span>
+<span id="cb8-79"><a href="#cb8-79"></a><span class="co">#&gt; [1] 0.06730882</span></span></code></pre></div>
 </div>
 <div class="footnotes">
 <hr />
